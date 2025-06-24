@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -14,21 +12,17 @@ import Navbar from "@/components/navbar"
 import { getPostById, updatePost, type Post } from "@/lib/api"
 import { getStoredUser } from "@/lib/auth"
 
-interface EditPostPageProps {
-  params: {
-    id: string
-  }
+type Props = {
+  params: { id: string }
 }
 
-export default function EditPostPage({ params }: EditPostPageProps) {
+export default function EditPostPage({ params }: Props) {
   const [post, setPost] = useState<Post | null>(null)
-  const [formData, setFormData] = useState({
-    title: "",
-    content: "",
-  })
+  const [formData, setFormData] = useState({ title: "", content: "" })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
   const router = useRouter()
   const user = getStoredUser()
 
@@ -38,9 +32,9 @@ export default function EditPostPage({ params }: EditPostPageProps) {
       return
     }
 
-    const fetchPost = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getPostById(Number.parseInt(params.id))
+        const data = await getPostById(Number(params.id))
 
         if (data.authorUsername !== user.username) {
           setError("이 게시글을 수정할 권한이 없습니다.")
@@ -48,18 +42,15 @@ export default function EditPostPage({ params }: EditPostPageProps) {
         }
 
         setPost(data)
-        setFormData({
-          title: data.title,
-          content: data.content,
-        })
+        setFormData({ title: data.title, content: data.content })
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch post")
+        setError(err instanceof Error ? err.message : "게시글 정보를 불러오는 데 실패했습니다.")
       } finally {
         setLoading(false)
       }
     }
 
-    fetchPost()
+    fetchData()
   }, [params.id, user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,30 +64,26 @@ export default function EditPostPage({ params }: EditPostPageProps) {
       await updatePost(post.id, formData)
       router.push(`/posts/${post.id}`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update post")
+      setError(err instanceof Error ? err.message : "게시글 수정에 실패했습니다.")
     } finally {
       setSaving(false)
     }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }))
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="animate-pulse">
-            <div className="bg-white rounded-lg border p-8">
-              <div className="h-8 bg-gray-200 rounded mb-6"></div>
-              <div className="h-10 bg-gray-200 rounded mb-4"></div>
-              <div className="h-64 bg-gray-200 rounded"></div>
-            </div>
+        <main className="max-w-4xl mx-auto py-8 px-4">
+          <div className="animate-pulse bg-white rounded-lg border p-8">
+            <div className="h-8 bg-gray-200 rounded mb-6"></div>
+            <div className="h-10 bg-gray-200 rounded mb-4"></div>
+            <div className="h-64 bg-gray-200 rounded"></div>
           </div>
         </main>
       </div>
@@ -107,7 +94,7 @@ export default function EditPostPage({ params }: EditPostPageProps) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <main className="max-w-4xl mx-auto py-8 px-4">
           <Alert>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
@@ -119,8 +106,7 @@ export default function EditPostPage({ params }: EditPostPageProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-
-      <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-4xl mx-auto py-8 px-4">
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">게시글 수정</CardTitle>
