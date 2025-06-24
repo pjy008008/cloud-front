@@ -2,6 +2,7 @@
 "use client"
 
 import type React from "react"
+
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -15,23 +16,12 @@ import { getPostById, updatePost, type Post } from "@/lib/api"
 import { getStoredUser } from "@/lib/auth"
 
 // Next.js의 PageProps 타입을 import 합니다.
-// 'next'에서 직접 가져오거나, 'next/types'에서 가져올 수 있습니다.
-// 일반적으로는 import { type PageProps } from 'next'; 로 충분합니다.
-// 만약 Next.js 버전에 따라 PageProps가 없으면,
-// { params: { id: string } } & { searchParams?: { [key: string]: string | string[] | undefined } }
-// 와 같이 직접 정의할 수 있습니다.
-import type { PageProps } from 'next';
+import type { PageProps } from 'next'; // 이 줄은 유지
 
-// PageProps를 확장하여 params의 타입을 명확히 합니다.
-interface EditPostPageProps extends PageProps<{ id: string }> {
-  // PageProps가 제네릭으로 params 타입을 받을 수 있습니다.
-  // 또는 명시적으로 params를 다시 정의해도 됩니다.
-  // params: { id: string };
-}
+// EditPostPageProps 인터페이스를 제거합니다.
 
-
-export default function EditPostPage({ params }: EditPostPageProps) {
-  // ... (기존 코드와 동일)
+// export default function EditPostPage({ params }: EditPostPageProps) { // 이전 코드
+export default function EditPostPage({ params }: PageProps<{ id: string }>) { // 이렇게 직접 PageProps 사용
   const [post, setPost] = useState<Post | null>(null)
   const [formData, setFormData] = useState({
     title: "",
@@ -51,6 +41,7 @@ export default function EditPostPage({ params }: EditPostPageProps) {
 
     const fetchPost = async () => {
       try {
+        // params.id는 string이므로 Number.parseInt로 변환
         const data = await getPostById(Number.parseInt(params.id))
 
         if (data.authorUsername !== user.username) {
@@ -71,7 +62,7 @@ export default function EditPostPage({ params }: EditPostPageProps) {
     }
 
     fetchPost()
-  }, [params.id, user, router])
+  }, [params.id, user, router]) // 의존성 배열에 router 추가
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
