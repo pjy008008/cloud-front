@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,12 +12,9 @@ import Navbar from "@/components/navbar"
 import { getPostById, updatePost, type Post } from "@/lib/api"
 import { getStoredUser } from "@/lib/auth"
 
-export default function EditPostPage({ params }: { params: { id: string } }) {
+export default function EditPostPageClient({ id }: { id: string }) {
   const [post, setPost] = useState<Post | null>(null)
-  const [formData, setFormData] = useState({
-    title: "",
-    content: "",
-  })
+  const [formData, setFormData] = useState({ title: "", content: "" })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -32,7 +29,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
 
     const fetchPost = async () => {
       try {
-        const data = await getPostById(Number(params.id))
+        const data = await getPostById(Number(id))
 
         if (data.authorUsername !== user.username) {
           setError("이 게시글을 수정할 권한이 없습니다.")
@@ -52,7 +49,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
     }
 
     fetchPost()
-  }, [params.id, user, router])
+  }, [id, user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -79,31 +76,15 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="animate-pulse">
-            <div className="bg-white rounded-lg border p-8">
-              <div className="h-8 bg-gray-200 rounded mb-6"></div>
-              <div className="h-10 bg-gray-200 rounded mb-4"></div>
-              <div className="h-64 bg-gray-200 rounded"></div>
-            </div>
-          </div>
-        </main>
-      </div>
-    )
+    return <div className="p-6">로딩 중...</div>
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <Alert>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        </main>
+      <div className="p-6">
+        <Alert>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       </div>
     )
   }
@@ -111,42 +92,29 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-
-      <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-4xl mx-auto py-8 px-4">
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">게시글 수정</CardTitle>
           </CardHeader>
-
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="title">제목</Label>
-                <Input
-                  id="title"
-                  name="title"
-                  type="text"
-                  required
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="게시글 제목을 입력하세요"
-                />
+                <Input id="title" name="title" value={formData.title} onChange={handleChange} required />
               </div>
-
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="content">내용</Label>
                 <Textarea
                   id="content"
                   name="content"
-                  required
                   value={formData.content}
                   onChange={handleChange}
-                  placeholder="게시글 내용을 입력하세요"
+                  required
                   className="min-h-[300px]"
                 />
               </div>
-
-              <div className="flex justify-end space-x-4">
+              <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => router.back()}>
                   취소
                 </Button>
