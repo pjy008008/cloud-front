@@ -1,4 +1,3 @@
-// app/posts/[id]/page.tsx
 "use client"
 
 import { useEffect, useState } from "react"
@@ -13,18 +12,13 @@ import Navbar from "@/components/navbar"
 import { getPostById, deletePost, type Post } from "@/lib/api"
 import { getStoredUser } from "@/lib/auth"
 
-// Next.js에서 제공하는 PageProps 타입을 import 합니다.
-import type { PageProps } from 'next';
+interface PostPageProps {
+  params: {
+    id: string
+  }
+}
 
-// 기존 PostPageProps 인터페이스는 이제 필요 없으므로 삭제합니다.
-// interface PostPageProps {
-//   params: {
-//     id: string
-//   }
-// }
-
-// PostPage 컴포넌트의 props 타입을 PageProps<{ id: string }>로 직접 지정합니다.
-export default function PostPage({ params }: PageProps<{ id: string }>) {
+export default function PostPage({ params }: PostPageProps) {
   const [post, setPost] = useState<Post | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -45,16 +39,10 @@ export default function PostPage({ params }: PageProps<{ id: string }>) {
     }
 
     fetchPost()
-  }, [params.id]) // 의존성 배열에 params.id만 있어도 됩니다.
+  }, [params.id])
 
   const handleDelete = async () => {
-    // 사용자 권한 확인 로직 추가 (선택 사항이지만 안전을 위해 필요)
-    if (!user || !post || user.username !== post.authorUsername) {
-      setError("게시글을 삭제할 권한이 없습니다.")
-      return
-    }
-
-    if (!confirm("정말로 이 게시글을 삭제하시겠습니까?")) return
+    if (!post || !confirm("정말로 이 게시글을 삭제하시겠습니까?")) return
 
     setDeleting(true)
     try {
@@ -77,7 +65,6 @@ export default function PostPage({ params }: PageProps<{ id: string }>) {
     })
   }
 
-  // canEditPost 로직은 유지
   const canEditPost = user && post && user.username === post.authorUsername
 
   if (loading) {
@@ -101,7 +88,6 @@ export default function PostPage({ params }: PageProps<{ id: string }>) {
     )
   }
 
-  // 에러 또는 게시글이 없는 경우 처리
   if (error || !post) {
     return (
       <div className="min-h-screen bg-gray-50">

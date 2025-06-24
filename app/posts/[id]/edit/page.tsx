@@ -1,4 +1,3 @@
-// app/posts/[id]/edit/page.tsx
 "use client"
 
 import type React from "react"
@@ -15,13 +14,13 @@ import Navbar from "@/components/navbar"
 import { getPostById, updatePost, type Post } from "@/lib/api"
 import { getStoredUser } from "@/lib/auth"
 
-// Next.js의 PageProps 타입을 import 합니다.
-import type { PageProps } from 'next'; // 이 줄은 유지
+interface EditPostPageProps {
+  params: {
+    id: string
+  }
+}
 
-// EditPostPageProps 인터페이스를 제거합니다.
-
-// export default function EditPostPage({ params }: EditPostPageProps) { // 이전 코드
-export default function EditPostPage({ params }: PageProps<{ id: string }>) { // 이렇게 직접 PageProps 사용
+export default function EditPostPage({ params }: EditPostPageProps) {
   const [post, setPost] = useState<Post | null>(null)
   const [formData, setFormData] = useState({
     title: "",
@@ -41,7 +40,6 @@ export default function EditPostPage({ params }: PageProps<{ id: string }>) { //
 
     const fetchPost = async () => {
       try {
-        // params.id는 string이므로 Number.parseInt로 변환
         const data = await getPostById(Number.parseInt(params.id))
 
         if (data.authorUsername !== user.username) {
@@ -62,7 +60,7 @@ export default function EditPostPage({ params }: PageProps<{ id: string }>) { //
     }
 
     fetchPost()
-  }, [params.id, user, router]) // 의존성 배열에 router 추가
+  }, [params.id, user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
