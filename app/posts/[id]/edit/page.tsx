@@ -1,6 +1,8 @@
+// app/posts/[id]/edit/page.tsx
 "use client"
 
-import { useEffect, useState } from "react"
+import type React from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,9 +14,29 @@ import Navbar from "@/components/navbar"
 import { getPostById, updatePost, type Post } from "@/lib/api"
 import { getStoredUser } from "@/lib/auth"
 
-export default function EditPostPageClient({ id }: { id: string }) {
+// Next.js의 PageProps 타입을 import 합니다.
+// 'next'에서 직접 가져오거나, 'next/types'에서 가져올 수 있습니다.
+// 일반적으로는 import { type PageProps } from 'next'; 로 충분합니다.
+// 만약 Next.js 버전에 따라 PageProps가 없으면,
+// { params: { id: string } } & { searchParams?: { [key: string]: string | string[] | undefined } }
+// 와 같이 직접 정의할 수 있습니다.
+import type { PageProps } from 'next';
+
+// PageProps를 확장하여 params의 타입을 명확히 합니다.
+interface EditPostPageProps extends PageProps<{ id: string }> {
+  // PageProps가 제네릭으로 params 타입을 받을 수 있습니다.
+  // 또는 명시적으로 params를 다시 정의해도 됩니다.
+  // params: { id: string };
+}
+
+
+export default function EditPostPage({ params }: EditPostPageProps) {
+  // ... (기존 코드와 동일)
   const [post, setPost] = useState<Post | null>(null)
-  const [formData, setFormData] = useState({ title: "", content: "" })
+  const [formData, setFormData] = useState({
+    title: "",
+    content: "",
+  })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -29,7 +51,7 @@ export default function EditPostPageClient({ id }: { id: string }) {
 
     const fetchPost = async () => {
       try {
-        const data = await getPostById(Number(id))
+        const data = await getPostById(Number.parseInt(params.id))
 
         if (data.authorUsername !== user.username) {
           setError("이 게시글을 수정할 권한이 없습니다.")
@@ -49,7 +71,7 @@ export default function EditPostPageClient({ id }: { id: string }) {
     }
 
     fetchPost()
-  }, [id, user, router])
+  }, [params.id, user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -76,15 +98,31 @@ export default function EditPostPageClient({ id }: { id: string }) {
   }
 
   if (loading) {
-    return <div className="p-6">로딩 중...</div>
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="animate-pulse">
+            <div className="bg-white rounded-lg border p-8">
+              <div className="h-8 bg-gray-200 rounded mb-6"></div>
+              <div className="h-10 bg-gray-200 rounded mb-4"></div>
+              <div className="h-64 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   if (error) {
     return (
-      <div className="p-6">
-        <Alert>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <Alert>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </main>
       </div>
     )
   }
@@ -92,29 +130,42 @@ export default function EditPostPageClient({ id }: { id: string }) {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <main className="max-w-4xl mx-auto py-8 px-4">
+
+      <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">게시글 수정</CardTitle>
           </CardHeader>
+
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="title">제목</Label>
-                <Input id="title" name="title" value={formData.title} onChange={handleChange} required />
+                <Input
+                  id="title"
+                  name="title"
+                  type="text"
+                  required
+                  value={formData.title}
+                  onChange={handleChange}
+                  placeholder="게시글 제목을 입력하세요"
+                />
               </div>
-              <div>
+
+              <div className="space-y-2">
                 <Label htmlFor="content">내용</Label>
                 <Textarea
                   id="content"
                   name="content"
+                  required
                   value={formData.content}
                   onChange={handleChange}
-                  required
+                  placeholder="게시글 내용을 입력하세요"
                   className="min-h-[300px]"
                 />
               </div>
-              <div className="flex justify-end space-x-2">
+
+              <div className="flex justify-end space-x-4">
                 <Button type="button" variant="outline" onClick={() => router.back()}>
                   취소
                 </Button>
